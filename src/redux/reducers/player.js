@@ -11,7 +11,7 @@ const player = (state = INITIAL_STATE, action) => {
   switch (action.type) {
   case SUBMIT_PLAYER:
     return {
-      ...state, // precisa?
+      ...state,
       name: action.state.name,
       assertions: action.state.assertion,
       score: action.state.score,

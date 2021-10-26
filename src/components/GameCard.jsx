@@ -7,6 +7,8 @@ import { getId } from '../services/triviaAPI';
 // import FeedbackText from './FeedbackText';
 import Loading from './Loading';
 import './game.css';
+import Button from './Button'; // req 10
+import { nextQuestions, submitPlayerAction } from '../redux/actions';
 
 const LAST_QUESTION = 5;
 
@@ -15,16 +17,19 @@ class GameCard extends Component {
     super(props);
     this.state = {
       intervalId: 0,
-      timer: 30,
+      timer: 10,
       questions: [],
       loading: true,
-      score: 0, // Req 9
-      assertions: 0, // Req 9
-      // player: {
-      //   name: '',
-      //   assertions: 0,
-      //   gravatarEmail: '',
-      // },
+      // assertions: 0, // Req 9
+      localStorage: {
+        player: {
+          name: '',
+          score: 0, // Req 9
+          assertions: 0,
+          gravatarEmail: '',
+        },
+      },
+      showButton: false, // req 10
     };
     this.getQuestionsFromApi = this.getQuestionsFromApi.bind(this);
     this.renderAnswers = this.renderAnswers.bind(this);
@@ -34,6 +39,8 @@ class GameCard extends Component {
     this.checkedQuestions = this.checkedQuestions.bind(this);
     this.checkPoints = this.checkPoints.bind(this); // Função para req 9
     this.checkPlayer = this.checkPlayer.bind(this); // Função para req 9
+    this.clickNextQuestions = this.clickNextQuestions.bind(this); // req 10
+    this.calledOnClick = this.calledOnClick.bind(this);
   }
 
   componentDidMount() {
@@ -57,26 +64,24 @@ class GameCard extends Component {
   }
 
   checkPoints() { // tentativa requisito 9
-    this.setState((prevState) => {
-      const hard = 3;
-      const { question, timer, score, assertions } = prevState;
-      const { difficulty } = question;
-      const level = difficulty === 'hard' ? hard : 2;
-      const sumPoints = 10;
-      const points = timer * (difficulty === 'hard' ? 1 : level) + score + sumPoints;
-      const state = JSON.parse(localStorage.getItem('state')) || {};
-      const local = JSON.stringify(
-        { player: { ...state.player, score: points, assertions: assertions + 1 } },
-      );
-      localStorage.setItem(
-        'state',
-        local,
-      );
-      return ({
-        score: points,
-        assertions: assertions + 1,
-      });
-    });
+    const { questions, timer, localStorage } = this.state;
+    const { index, dispatchSetValue } = this.props;
+    const { difficulty } = questions[index];
+    const hard = 3;
+    const sumPoints = 10;
+    const level = difficulty === 'hard' ? hard : 2;
+    const points = sumPoints + (timer * (difficulty === 'easy' ? 1 : level));
+    console.log(index);
+    console.log(points);
+    this.setState((prevState) => ({
+      localStorage: {
+        player: {
+          ...prevState.localStorage.player,
+          score: prevState.localStorage.player.score + points,
+        },
+      },
+    }));
+    dispatchSetValue(localStorage);
   }
 
   checkPlayer(ranking, name, score, picture) { // Função para requisito 9
@@ -92,6 +97,7 @@ class GameCard extends Component {
   }
 
   checkedQuestions() {
+    this.setState({ showButton: true });
     const btns = document.querySelectorAll('button');
     btns.forEach((btn) => {
       if (btn.dataset.testid !== 'correct-answer') {
@@ -109,20 +115,48 @@ class GameCard extends Component {
   }
 
   decrementTimer() {
-    this.setState((prevTimer) => ({
-      timer: prevTimer.timer - 1,
+    this.setState((prevState) => ({
+      timer: prevState.timer - 1,
     }));
   }
 
-  renderTimer() {
-    const SECOND = 1000;
-    const intervalId = setInterval(this.decrementTimer, SECOND);
-    this.setState({ intervalId });
+  clickNextQuestions() { // req 10
+    const { incrementIndex } = this.props;
+    incrementIndex();
+    this.setState({
+      timer: 10,
+      showButton: false,
+    });
+    this.renderTimer();
+  }
+
+  calledOnClick() {
+    const { intervalId } = this.state;
+    clearInterval(intervalId);
+    this.checkPoints();
+    this.checkedQuestions();
+  }
+
+  renderQuestion() {
+    const { index } = this.props;
+    const { questions } = this.state;
+    if (index < LAST_QUESTION) {
+      return (
+        <div>
+          <h1 data-testid="question-text">
+            { parse(questions[index].question) }
+          </h1>
+          <h2 data-testid="question-category">
+            { parse(questions[index].category) }
+          </h2>
+        </div>
+      );
+    }
+    return (<Redirect to="/feedback" />); // corrigir
   }
 
   renderAnswers() {
     const { questions, timer } = this.state;
-    console.log(questions);
     const { index } = this.props;
     const correctAnswer = questions[index].correct_answer;
     const incorrectAnswer = questions[index].incorrect_answers;
@@ -130,7 +164,7 @@ class GameCard extends Component {
       <button
         type="button"
         data-testid="correct-answer"
-        onClick={ this.checkedQuestions }
+        onClick={ () => this.calledOnClick() }
         disabled={ !timer }
       >
         { parse(correctAnswer) }
@@ -142,7 +176,7 @@ class GameCard extends Component {
           type="button"
           key={ key }
           data-testid={ `wrong-answer-${key}` }
-          onClick={ this.checkedQuestions }
+          onClick={ () => this.calledOnClick() }
           disabled={ !timer }
         >
           { parse(answer) }
@@ -163,26 +197,14 @@ class GameCard extends Component {
     }
   }
 
-  renderQuestion() {
-    const { index } = this.props;
-    const { questions } = this.state;
-    if (index < LAST_QUESTION) {
-      return (
-        <div>
-          <h1 data-testid="question-text">
-            { parse(questions[index].question) }
-          </h1>
-          <h2 data-testid="question-category">
-            { parse(questions[index].category) }
-          </h2>
-        </div>
-      );
-    }
-    return (<Redirect to="/feedback" />);
+  renderTimer() {
+    const SECOND = 1000;
+    const intervalId = setInterval(this.decrementTimer, SECOND);
+    this.setState({ intervalId });
   }
 
   render() {
-    const { loading, timer } = this.state;
+    const { loading, timer, showButton } = this.state;
 
     if (loading) {
       return <Loading />;
@@ -194,6 +216,11 @@ class GameCard extends Component {
         <div>
           { `Tempo: ${timer}` }
         </div>
+        <div>
+          { (showButton || !timer) && <Button
+            onClick={ this.clickNextQuestions }
+          /> }
+        </div>
       </div>
     );
   }
@@ -201,6 +228,8 @@ class GameCard extends Component {
 
 GameCard.propTypes = {
   index: PropTypes.number.isRequired,
+  incrementIndex: PropTypes.func.isRequired,
+  dispatchSetValue: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -208,4 +237,11 @@ const mapStateToProps = (state) => ({
   assertions: state.player.assertions,
 });
 
-export default connect(mapStateToProps, null)(GameCard);
+const mapDispatchToProps = (dispatch) => ({ // req 10
+  incrementIndex: () => dispatch(nextQuestions()),
+  dispatchSetValue: (state) => (
+    dispatch(submitPlayerAction(state))
+  ),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(GameCard);

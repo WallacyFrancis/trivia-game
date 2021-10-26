@@ -1,4 +1,4 @@
-import { SAVE_QUESTIONS } from '../actions';
+import { SAVE_QUESTIONS, NEXT_QUESTIONS } from '../actions';
 
 const INITIAL_STATE = {
   questions: [],
@@ -12,6 +12,11 @@ const questionsRedux = (state = INITIAL_STATE, action) => {
       ...state,
       questions: action.questions,
       index: action.index,
+    };
+  case NEXT_QUESTIONS:
+    return {
+      ...state,
+      index: state.index + 1,
     };
   default:
     return state;
