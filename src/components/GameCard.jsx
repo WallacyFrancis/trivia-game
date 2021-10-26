@@ -97,7 +97,7 @@ class GameCard extends Component {
       if (btn.dataset.testid !== 'correct-answer') {
         return btn.classList.add('wrong');
       }
-      return btn.classList.add('correct') && this.checkPoints();
+      return btn.classList.add('correct') && this.checkPoints(); // verificar execução da função checkPoints
     });
   }
 
