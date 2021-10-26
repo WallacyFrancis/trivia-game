@@ -7,9 +7,9 @@ export const submitPlayerAction = (state) => ({
   state,
 });
 
-export const saveQuestions = (state) => ({
+export const saveQuestions = (questions) => ({
   type: SAVE_QUESTIONS,
-  state,
+  questions,
 });
 
 export const nextQuestions = () => ({

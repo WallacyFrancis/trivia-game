@@ -16,7 +16,7 @@ class Game extends Component {
 }
 
 Game.propTypes = {
-  score: PropTypes.number,
+  score: PropTypes.isRequired,
 };
 
 export default Game;

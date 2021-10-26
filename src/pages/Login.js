@@ -2,8 +2,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { fetchTrivia } from '../services/triviaAPI';
-import { submitPlayerAction } from '../redux/actions';
+import { fetchTrivia, getId } from '../services/triviaAPI';
+import { submitPlayerAction, saveQuestions } from '../redux/actions';
 
 // Referência para setar o objeto no localStorage: https://stackoverflow.com/questions/2010892/storing-objects-in-html5-localstorage
 
@@ -24,10 +24,19 @@ class Login extends Component {
     };
     this.handleChange = this.handleChange.bind(this);
     this.submitPlayer = this.submitPlayer.bind(this);
+    this.getQuestionsFromApi = this.getQuestionsFromApi.bind(this);
   }
 
-  componentDidMount() {
-    fetchTrivia();
+  async componentDidMount() {
+    await fetchTrivia();
+  }
+
+  async getQuestionsFromApi() {
+    const { dispatchQuestions } = this.props;
+    const token = localStorage.getItem('token');
+    const response = await getId(token);
+    const json = await response.json();
+    dispatchQuestions(json.results);
   }
 
   handleChange({ target: { name, value } }) {
@@ -87,7 +96,10 @@ class Login extends Component {
             type="button"
             data-testid="btn-play"
             disabled={ disabled }
-            onClick={ this.submitPlayer }
+            onClick={ () => {
+              this.submitPlayer();
+              this.getQuestionsFromApi();
+            } }
           >
             Jogar
           </button>
@@ -107,11 +119,15 @@ class Login extends Component {
 
 Login.propTypes = {
   dispatchSetValue: PropTypes.func.isRequired,
+  dispatchQuestions: PropTypes.func.isRequired,
 };
 
 const mapDispatchToProps = (dispatch) => ({
   dispatchSetValue: (state) => (
     dispatch(submitPlayerAction(state))
+  ),
+  dispatchQuestions: (questions) => (
+    dispatch(saveQuestions(questions))
   ),
 });
 

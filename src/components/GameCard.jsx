@@ -9,6 +9,7 @@ import Loading from './Loading';
 import './game.css';
 import Button from './Button'; // req 10
 import { nextQuestions, submitPlayerAction } from '../redux/actions';
+import Answers from './Answers';
 
 const LAST_QUESTION = 5;
 
@@ -20,7 +21,7 @@ class GameCard extends Component {
       timer: 10,
       questions: [],
       loading: true,
-      // assertions: 0, // Req 9
+      // assertioanyns: 0, // Req 9
       localStorage: {
         player: {
           name: '',
@@ -32,13 +33,13 @@ class GameCard extends Component {
       showButton: false, // req 10
     };
     this.getQuestionsFromApi = this.getQuestionsFromApi.bind(this);
-    this.renderAnswers = this.renderAnswers.bind(this);
+    // this.renderAnswers = this.renderAnswers.bind(this);
     this.renderTimer = this.renderTimer.bind(this);
     this.decrementTimer = this.decrementTimer.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
-    this.checkedQuestions = this.checkedQuestions.bind(this);
+    // this.checkedQuestions = this.checkedQuestions.bind(this);
     this.checkPoints = this.checkPoints.bind(this); // Função para req 9
-    this.checkPlayer = this.checkPlayer.bind(this); // Função para req 9
+    // this.checkPlayer = this.checkPlayer.bind(this); // Função para req 9
     this.clickNextQuestions = this.clickNextQuestions.bind(this); // req 10
     this.calledOnClick = this.calledOnClick.bind(this);
   }
@@ -84,28 +85,17 @@ class GameCard extends Component {
     dispatchSetValue(localStorage);
   }
 
-  checkPlayer(ranking, name, score, picture) { // Função para requisito 9
-    const checkPlayer = ranking
-      .some(({ name: n }) => n === name);
-    return !checkPlayer
-      ? [...ranking, { name, score, picture }]
-      : ranking.map((rank) => {
-        if (rank.name !== name) { return rank; }
-        rank.score = rank.score > score ? rank.score : score;
-        return rank;
-      });
-  }
-
-  checkedQuestions() {
-    this.setState({ showButton: true });
-    const btns = document.querySelectorAll('button');
-    btns.forEach((btn) => {
-      if (btn.dataset.testid !== 'correct-answer') {
-        return btn.classList.add('wrong');
-      }
-      return btn.classList.add('correct') && this.checkPoints(); // verificar execução da função checkPoints
-    });
-  }
+  // checkPlayer(ranking, name, score, picture) { // Função para requisito 9
+  //   const checkPlayer = ranking
+  //     .some(({ name: n }) => n === name);
+  //   return !checkPlayer
+  //     ? [...ranking, { name, score, picture }]
+  //     : ranking.map((rank) => {
+  //       if (rank.name !== name) { return rank; }
+  //       rank.score = rank.score > score ? rank.score : score;
+  //       return rank;
+  //     });
+  // }
 
   stopTimer() {
     const { timer, intervalId } = this.state;
@@ -134,7 +124,7 @@ class GameCard extends Component {
     const { intervalId } = this.state;
     clearInterval(intervalId);
     this.checkPoints();
-    this.checkedQuestions();
+    // this.checkedQuestions();
   }
 
   renderQuestion() {
@@ -155,48 +145,6 @@ class GameCard extends Component {
     return (<Redirect to="/feedback" />); // corrigir
   }
 
-  renderAnswers() {
-    const { questions, timer } = this.state;
-    const { index } = this.props;
-    const correctAnswer = questions[index].correct_answer;
-    const incorrectAnswer = questions[index].incorrect_answers;
-    const btnCorrect = (
-      <button
-        type="button"
-        data-testid="correct-answer"
-        onClick={ () => this.calledOnClick() }
-        disabled={ !timer }
-      >
-        { parse(correctAnswer) }
-      </button>
-    );
-    const btnIncorret = (
-      incorrectAnswer.map((answer, key) => (
-        <button
-          type="button"
-          key={ key }
-          data-testid={ `wrong-answer-${key}` }
-          onClick={ () => this.calledOnClick() }
-          disabled={ !timer }
-        >
-          { parse(answer) }
-        </button>
-      ))
-    );
-    const totalQuestions = [...btnIncorret, btnCorrect];
-    if (index < LAST_QUESTION) {
-      return (
-        <div>
-          {
-            totalQuestions.sort().map((element, key) => (
-              <p key={ key }>{ element }</p>
-            ))
-          }
-        </div>
-      );
-    }
-  }
-
   renderTimer() {
     const SECOND = 1000;
     const intervalId = setInterval(this.decrementTimer, SECOND);
@@ -204,7 +152,7 @@ class GameCard extends Component {
   }
 
   render() {
-    const { loading, timer, showButton } = this.state;
+    const { loading, timer, showButton, questions } = this.state;
 
     if (loading) {
       return <Loading />;
@@ -212,7 +160,7 @@ class GameCard extends Component {
     return (
       <div>
         { this.renderQuestion() }
-        { this.renderAnswers() }
+        <Answers questions={ questions } />
         <div>
           { `Tempo: ${timer}` }
         </div>
