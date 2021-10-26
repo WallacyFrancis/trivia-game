@@ -18,20 +18,22 @@ class GameCard extends Component {
       timer: 30,
       questions: [],
       loading: true,
+      score: 0, // Req 9
+      assertions: 0, // Req 9
       // player: {
       //   name: '',
       //   assertions: 0,
-      //   score: 0,
       //   gravatarEmail: '',
       // },
     };
-
     this.getQuestionsFromApi = this.getQuestionsFromApi.bind(this);
     this.renderAnswers = this.renderAnswers.bind(this);
     this.renderTimer = this.renderTimer.bind(this);
     this.decrementTimer = this.decrementTimer.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
     this.checkedQuestions = this.checkedQuestions.bind(this);
+    this.checkPoints = this.checkPoints.bind(this); // Função para req 9
+    this.checkPlayer = this.checkPlayer.bind(this); // Função para req 9
   }
 
   componentDidMount() {
@@ -54,13 +56,48 @@ class GameCard extends Component {
     });
   }
 
+  checkPoints() { // tentativa requisito 9
+    this.setState((prevState) => {
+      const hard = 3;
+      const { question, timer, score, assertions } = prevState;
+      const { difficulty } = question;
+      const level = difficulty === 'hard' ? hard : 2;
+      const sumPoints = 10;
+      const points = timer * (difficulty === 'hard' ? 1 : level) + score + sumPoints;
+      const state = JSON.parse(localStorage.getItem('state')) || {};
+      const local = JSON.stringify(
+        { player: { ...state.player, score: points, assertions: assertions + 1 } },
+      );
+      localStorage.setItem(
+        'state',
+        local,
+      );
+      return ({
+        score: points,
+        assertions: assertions + 1,
+      });
+    });
+  }
+
+  checkPlayer(ranking, name, score, picture) { // Função para requisito 9
+    const checkPlayer = ranking
+      .some(({ name: n }) => n === name);
+    return !checkPlayer
+      ? [...ranking, { name, score, picture }]
+      : ranking.map((rank) => {
+        if (rank.name !== name) { return rank; }
+        rank.score = rank.score > score ? rank.score : score;
+        return rank;
+      });
+  }
+
   checkedQuestions() {
     const btns = document.querySelectorAll('button');
     btns.forEach((btn) => {
       if (btn.dataset.testid !== 'correct-answer') {
         return btn.classList.add('wrong');
       }
-      return btn.classList.add('correct');
+      return btn.classList.add('correct') && this.checkPoints();
     });
   }
 
@@ -85,6 +122,7 @@ class GameCard extends Component {
 
   renderAnswers() {
     const { questions, timer } = this.state;
+    console.log(questions);
     const { index } = this.props;
     const correctAnswer = questions[index].correct_answer;
     const incorrectAnswer = questions[index].incorrect_answers;
@@ -95,7 +133,7 @@ class GameCard extends Component {
         onClick={ this.checkedQuestions }
         disabled={ !timer }
       >
-        {parse(correctAnswer)}
+        { parse(correctAnswer) }
       </button>
     );
     const btnIncorret = (
@@ -107,7 +145,7 @@ class GameCard extends Component {
           onClick={ this.checkedQuestions }
           disabled={ !timer }
         >
-          {parse(answer)}
+          { parse(answer) }
         </button>
       ))
     );
@@ -132,10 +170,10 @@ class GameCard extends Component {
       return (
         <div>
           <h1 data-testid="question-text">
-            {parse(questions[index].question)}
+            { parse(questions[index].question) }
           </h1>
           <h2 data-testid="question-category">
-            {parse(questions[index].category)}
+            { parse(questions[index].category) }
           </h2>
         </div>
       );
@@ -151,10 +189,10 @@ class GameCard extends Component {
     }
     return (
       <div>
-        {this.renderQuestion()}
-        {this.renderAnswers()}
+        { this.renderQuestion() }
+        { this.renderAnswers() }
         <div>
-          {`Tempo: ${timer}`}
+          { `Tempo: ${timer}` }
         </div>
       </div>
     );
