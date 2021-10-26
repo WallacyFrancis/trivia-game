@@ -12,7 +12,6 @@ function App() {
       <Route exact path="/game" component={ Game } />
       <Route path="/settings" component={ Settings } />
       <Route path="/feedback" component={ Feedback } />
-
     </Switch>
 
   );

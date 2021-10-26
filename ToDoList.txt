@@ -5,7 +5,7 @@ Passos para solucionar a rendizacao das respostas
   [x] key para Answers
   [x] key para correct_answers
   [x] key para incorrect_answers.array
-  [] key para conferir a resposta.bool
+  [x] key para conferir a resposta.bool
 
 [] Função para inserir as respostas dentro de um array
 [] Lógica para embaralhar as respostas
