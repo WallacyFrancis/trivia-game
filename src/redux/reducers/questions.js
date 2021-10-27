@@ -1,21 +1,26 @@
-import { SAVE_QUESTIONS } from '../actions';
+import { SAVE_QUESTIONS, NEXT_QUESTIONS } from '../actions';
 
 const INITIAL_STATE = {
-  questions: [],
   index: 0,
+  loading: true,
 };
 
-const questionsRedux = (state = INITIAL_STATE, action) => {
+const questions = (state = INITIAL_STATE, action) => {
   switch (action.type) {
   case SAVE_QUESTIONS:
     return {
       ...state,
-      questions: action.questions,
-      index: action.index,
+      ...action.questions,
+      loading: false,
+    };
+  case NEXT_QUESTIONS:
+    return {
+      ...state,
+      index: state.index + 1,
     };
   default:
     return state;
   }
 };
 
-export default questionsRedux;
+export default questions;
