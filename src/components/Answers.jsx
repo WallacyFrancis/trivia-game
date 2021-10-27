@@ -2,14 +2,60 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import parse from 'html-react-parser';
+import Loading from './Loading';
+import Button from './Button';
+import { nextQuestions } from '../redux/actions';
 
 const LAST_QUESTION = 5;
+const ANSWER_TIME = 30;
 
 class Answers extends Component {
   constructor() {
     super();
+
+    this.state = {
+      showButton: false,
+      intervalId: 0,
+      timer: ANSWER_TIME,
+    };
+
     this.renderAnswers = this.renderAnswers.bind(this);
     this.checkedQuestions = this.checkedQuestions.bind(this);
+    this.calledOnClick = this.calledOnClick.bind(this);
+    this.clickNextQuestions = this.clickNextQuestions.bind(this);
+    this.checkedQuestions = this.checkedQuestions.bind(this);
+    this.renderTimer = this.renderTimer.bind(this);
+    this.decrementTimer = this.decrementTimer.bind(this);
+    this.stopTimer = this.stopTimer.bind(this);
+  }
+
+  componentDidMount() {
+    this.renderTimer();
+  }
+
+  componentDidUpdate() {
+    this.stopTimer();
+  }
+
+  calledOnClick() {
+    const { intervalId } = this.state;
+    clearInterval(intervalId);
+    this.setState({ showButton: true });
+    this.checkedQuestions();
+  }
+
+  clickNextQuestions() {
+    const { incrementIndex } = this.props;
+    this.setState({ showButton: false });
+    incrementIndex();
+    this.renderTimer();
+    const btns = document.querySelectorAll('button');
+    btns.forEach((btn) => {
+      if (btn.dataset.testid !== 'correct-answer') {
+        return btn.classList.remove('wrong');
+      }
+      return btn.classList.remove('correct');
+    });
   }
 
   checkedQuestions() {
@@ -18,12 +64,33 @@ class Answers extends Component {
       if (btn.dataset.testid !== 'correct-answer') {
         return btn.classList.add('wrong');
       }
-      return btn.classList.add('correct') && this.checkPoints(); // verificar execução da função checkPoints
+      return btn.classList.add('correct');
     });
   }
 
+  stopTimer() {
+    const { timer, intervalId } = this.state;
+    if (!timer) {
+      clearInterval(intervalId);
+    }
+  }
+
+  decrementTimer() {
+    this.setState((prevState) => ({
+      timer: prevState.timer - 1,
+    }));
+  }
+
+  renderTimer() {
+    const SECOND = 1000;
+    this.setState({ timer: ANSWER_TIME });
+    const intervalId = setInterval(this.decrementTimer, SECOND);
+    this.setState({ intervalId });
+  }
+
   renderAnswers() {
-    const { index, questions } = this.props;
+    const { questions, index } = this.props;
+    const { timer } = this.state;
     const correctAnswer = questions[index].correct_answer;
     const incorrectAnswer = questions[index].incorrect_answers;
     const btnCorrect = (
@@ -31,7 +98,7 @@ class Answers extends Component {
         type="button"
         data-testid="correct-answer"
         onClick={ () => this.calledOnClick() }
-        // disabled={ !timer }
+        disabled={ !timer }
       >
         { parse(correctAnswer) }
       </button>
@@ -43,7 +110,7 @@ class Answers extends Component {
           key={ key }
           data-testid={ `wrong-answer-${key}` }
           onClick={ () => this.calledOnClick() }
-          // disabled={ !timer }
+          disabled={ !timer }
         >
           { parse(answer) }
         </button>
@@ -64,21 +131,40 @@ class Answers extends Component {
   }
 
   render() {
-    return (
-      <div>
-        { this.renderAnswers }
-      </div>
-    );
+    const { loading } = this.props;
+    const { showButton, timer } = this.state;
+
+    if (!loading) {
+      return (
+        <div>
+          { this.renderAnswers() }
+          { (showButton) && <Button
+            onClick={ this.clickNextQuestions }
+          /> }
+          <div>
+            { `Tempo: ${timer}` }
+          </div>
+        </div>
+      );
+    } return <Loading />;
   }
 }
 
 Answers.propTypes = {
-  index: PropTypes.number.isRequired,
-  questions: PropTypes.arrayOf().isRequired,
-};
+  index: PropTypes,
+  loading: PropTypes,
+  questions: PropTypes,
+  incrementIndex: PropTypes,
+}.isRequired;
 
 const mapStateToProps = (state) => ({
+  questions: state.questions,
   index: state.questions.index,
+  loading: state.questions.loading,
 });
 
-export default connect(mapStateToProps)(Answers);
+const mapDispatchToProps = (dispatch) => ({
+  incrementIndex: () => dispatch(nextQuestions()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Answers);

@@ -2,7 +2,7 @@ import { SAVE_QUESTIONS, NEXT_QUESTIONS } from '../actions';
 
 const INITIAL_STATE = {
   index: 0,
-  questions: [],
+  loading: true,
 };
 
 const questions = (state = INITIAL_STATE, action) => {
@@ -10,7 +10,8 @@ const questions = (state = INITIAL_STATE, action) => {
   case SAVE_QUESTIONS:
     return {
       ...state,
-      questions: action.questions,
+      ...action.questions,
+      loading: false,
     };
   case NEXT_QUESTIONS:
     return {

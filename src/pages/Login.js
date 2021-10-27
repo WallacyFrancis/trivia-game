@@ -27,8 +27,8 @@ class Login extends Component {
     this.getQuestionsFromApi = this.getQuestionsFromApi.bind(this);
   }
 
-  async componentDidMount() {
-    await fetchTrivia();
+  componentDidMount() {
+    fetchTrivia();
   }
 
   async getQuestionsFromApi() {
