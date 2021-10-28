@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { fetchTrivia, getId } from '../services/triviaAPI';
 import { submitPlayerAction, saveQuestions } from '../redux/actions';
@@ -14,6 +14,7 @@ class Login extends Component {
     super(props);
 
     this.state = {
+      isFatch: false,
       disabled: true,
       player: {
         name: '',
@@ -34,9 +35,14 @@ class Login extends Component {
   async getQuestionsFromApi() {
     const { dispatchQuestions } = this.props;
     const token = localStorage.getItem('token');
-    const response = await getId(token);
-    const json = await response.json();
-    dispatchQuestions(json.results);
+    try {
+      const response = await getId(token);
+      const json = await response.json();
+      dispatchQuestions(json.results);
+      this.setState({ isFatch: true });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   handleChange({ target: { name, value } }) {
@@ -68,7 +74,7 @@ class Login extends Component {
   }
 
   render() {
-    const { disabled } = this.state;
+    const { disabled, isFatch } = this.state;
     return (
       <form>
         <label htmlFor="name">
@@ -91,19 +97,17 @@ class Login extends Component {
           />
         </label>
         <br />
-        <Link to="/game">
-          <button
-            type="button"
-            data-testid="btn-play"
-            disabled={ disabled }
-            onClick={ () => {
-              this.submitPlayer();
-              this.getQuestionsFromApi();
-            } }
-          >
-            Jogar
-          </button>
-        </Link>
+        <button
+          type="button"
+          data-testid="btn-play"
+          disabled={ disabled }
+          onClick={ () => {
+            this.submitPlayer();
+            this.getQuestionsFromApi();
+          } }
+        >
+          Jogar
+        </button>
         <Link to="/settings">
           <button
             type="button"
@@ -112,6 +116,7 @@ class Login extends Component {
             Configurações
           </button>
         </Link>
+        { isFatch && <Redirect to="/game" /> }
       </form>
     );
   }
