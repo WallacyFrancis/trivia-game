@@ -1,4 +1,4 @@
-import { SUBMIT_PLAYER } from '../actions';
+import { SUBMIT_PLAYER, SCORE_ACTION } from '../actions';
 
 const INITIAL_STATE = {
   name: '',
@@ -16,6 +16,12 @@ const player = (state = INITIAL_STATE, action) => {
       assertions: action.state.assertion,
       score: action.state.score,
       gravatarEmail: action.state.gravatarEmail,
+    };
+  case SCORE_ACTION:
+    return {
+      ...state,
+      score: action.score,
+      assertions: action.assertions,
     };
   default:
     return state;

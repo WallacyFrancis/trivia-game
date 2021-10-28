@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import parse from 'html-react-parser';
 import Loading from './Loading';
 import Button from './Button';
-import { nextQuestions } from '../redux/actions';
+import { nextQuestions, scoreAction } from '../redux/actions';
 
 const LAST_QUESTION = 5;
 const ANSWER_TIME = 30;
@@ -17,6 +17,8 @@ class Answers extends Component {
       showButton: false,
       intervalId: 0,
       timer: ANSWER_TIME,
+      score: 0,
+      assertions: 0,
     };
 
     this.renderAnswers = this.renderAnswers.bind(this);
@@ -27,6 +29,7 @@ class Answers extends Component {
     this.renderTimer = this.renderTimer.bind(this);
     this.decrementTimer = this.decrementTimer.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
+    this.handleScore = this.handleScore.bind(this);
   }
 
   componentDidMount() {
@@ -37,15 +40,17 @@ class Answers extends Component {
     this.stopTimer();
   }
 
-  calledOnClick() {
+  calledOnClick(e) {
     const { intervalId } = this.state;
     clearInterval(intervalId);
     this.setState({ showButton: true });
     this.checkedQuestions();
+    this.handleScore(e);
   }
 
   clickNextQuestions() {
-    const { incrementIndex } = this.props;
+    const { incrementIndex, calcScore } = this.props;
+    const { score, assertions } = this.state;
     this.setState({ showButton: false });
     incrementIndex();
     this.renderTimer();
@@ -56,6 +61,7 @@ class Answers extends Component {
       }
       return btn.classList.remove('correct');
     });
+    calcScore(score, assertions);
   }
 
   checkedQuestions() {
@@ -81,6 +87,26 @@ class Answers extends Component {
     }));
   }
 
+  handleScore({ target }) {
+    const HARD = 3;
+    const MEDIUM = 2;
+    const { questions, index } = this.props;
+    const { testid } = target.dataset;
+    const { timer } = this.state;
+
+    const defaultValue = 10;
+    const dify = questions[index].difficulty;
+    const level = dify === 'hard' ? HARD : MEDIUM;
+
+    if (testid === 'correct-answer') {
+      const points = defaultValue + (timer * (dify === 'easy' ? 1 : level));
+      this.setState((prev) => ({
+        assertions: prev.assertions + 1,
+        score: prev.score + points,
+      }));
+    }
+  }
+
   renderTimer() {
     const SECOND = 1000;
     this.setState({ timer: ANSWER_TIME });
@@ -97,7 +123,7 @@ class Answers extends Component {
       <button
         type="button"
         data-testid="correct-answer"
-        onClick={ () => this.calledOnClick() }
+        onClick={ (e) => this.calledOnClick(e) }
         disabled={ !timer }
       >
         { parse(correctAnswer) }
@@ -109,7 +135,7 @@ class Answers extends Component {
           type="button"
           key={ key }
           data-testid={ `wrong-answer-${key}` }
-          onClick={ () => this.calledOnClick() }
+          onClick={ (e) => this.calledOnClick(e) }
           disabled={ !timer }
         >
           { parse(answer) }
@@ -155,16 +181,19 @@ Answers.propTypes = {
   loading: PropTypes,
   questions: PropTypes,
   incrementIndex: PropTypes,
+  scoreAction: PropTypes,
 }.isRequired;
 
 const mapStateToProps = (state) => ({
   questions: state.questions,
   index: state.questions.index,
   loading: state.questions.loading,
+  score: state.player.score,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   incrementIndex: () => dispatch(nextQuestions()),
+  calcScore: (score, assertions) => dispatch(scoreAction(score, assertions)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Answers);
