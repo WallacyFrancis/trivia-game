@@ -15,25 +15,10 @@ class GameCard extends Component {
     super();
 
     this.renderQuestion = this.renderQuestion.bind(this);
-    // this.saveScore = this.saveScore.bind(this);
   }
-
-  // saveScore() {
-  //   const { score } = this.props;
-  //   const prevStateLocalStorage = JSON.parse(localStorage.getItem('state'));
-  //   const { player }
-  //   const state = {
-  //     ...prevStateLocalStorage,
-  //     player: {
-  //       score,
-  //     },
-  //   };
-  //   console.log(state);
-  // }
 
   renderQuestion() {
     const { questions, index } = this.props;
-    // this.saveScore();
     if (index < LAST_QUESTION) {
       return (
         <div>
