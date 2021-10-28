@@ -27,6 +27,7 @@ class Answers extends Component {
     this.renderTimer = this.renderTimer.bind(this);
     this.decrementTimer = this.decrementTimer.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
+    this.saveScoreInSotrage = this.saveScoreInSotrage.bind(this);
   }
 
   componentDidMount() {
@@ -42,6 +43,17 @@ class Answers extends Component {
     clearInterval(intervalId);
     this.setState({ showButton: true });
     this.checkedQuestions();
+    this.saveScoreInSotrage();
+  }
+
+  saveScoreInSotrage() {
+    const storage = JSON.parse(localStorage.getItem('state'));
+    // console.log(storage);
+    const player = {
+      ...storage.player,
+      score: 10,
+    };
+    console.log(player);
   }
 
   clickNextQuestions() {

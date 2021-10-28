@@ -25,7 +25,7 @@ class GameCard extends Component {
         </div>
       );
     }
-    return (<Redirect to="/feedback" />); // corrigir
+    return (<Redirect to="/feedback" />);
   }
 
   render() {
@@ -50,7 +50,6 @@ GameCard.propTypes = {
 const mapStateToProps = (state) => ({
   index: state.questions.index,
   loading: state.questions.loading,
-  assertions: state.player.assertions,
   questions: state.questions,
 });
 
