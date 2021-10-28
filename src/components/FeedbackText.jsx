@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import { connect } from 'react-redux';
 
 class FeedbackText extends React.Component {
   constructor() {
@@ -20,10 +21,10 @@ class FeedbackText extends React.Component {
     const numberMinHits = 3;
     const { numberHits } = this.props;
 
-    if (numberHits < numberMinHits) {
-      this.setState({ message: 'Podia ser melhor...' });
-    } else {
+    if (numberHits >= numberMinHits) {
       this.setState({ message: 'Mandou bem!' });
+    } else {
+      this.setState({ message: 'Podia ser melhor...' });
     }
   }
 
@@ -37,4 +38,8 @@ FeedbackText.propTypes = {
   numberHits: PropTypes.number.isRequired,
 };
 
-export default FeedbackText;
+const mapStateToProps = (state) => ({
+  numberHits: state.player.assertions,
+});
+
+export default connect(mapStateToProps)(FeedbackText);
