@@ -30,6 +30,7 @@ class Answers extends Component {
     this.stopTimer = this.stopTimer.bind(this);
     this.saveScoreInSotrage = this.saveScoreInSotrage.bind(this);
     this.handleScore = this.handleScore.bind(this);
+    this.sendScore = this.sendScore.bind(this);
   }
 
   componentDidMount() {
@@ -110,6 +111,21 @@ class Answers extends Component {
       const points = defaultValue + (timer * (dify === 'easy' ? 1 : level));
       const assertion = 1;
       calcScore(points, assertion); // manda direto pro state global
+      this.sendScore(points);
+    }
+  }
+
+  sendScore(n) {
+    const store = JSON.parse(localStorage.getItem('state'));
+    const ZERO = 0;
+    if (n !== ZERO) {
+      const state = {
+        player: {
+          ...store.player,
+          score: store.player.score + n,
+        },
+      };
+      localStorage.setItem('state', JSON.stringify(state));
     }
   }
 
