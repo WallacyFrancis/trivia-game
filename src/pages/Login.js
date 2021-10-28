@@ -71,7 +71,7 @@ class Login extends Component {
     const { disabled } = this.state;
     return (
       <form>
-        <label htmlFor>
+        <label htmlFor="name">
           Jogador:
           <input
             name="name"
@@ -81,7 +81,7 @@ class Login extends Component {
           />
         </label>
         <br />
-        <label htmlFor>
+        <label htmlFor="gravatarEmail">
           E-mail
           <input
             name="gravatarEmail"

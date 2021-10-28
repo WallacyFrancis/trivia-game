@@ -8,6 +8,7 @@ import { nextQuestions, scoreAction } from '../redux/actions';
 
 const LAST_QUESTION = 5;
 const ANSWER_TIME = 30;
+const CORRECT = 'correct-answer';
 
 class Answers extends Component {
   constructor() {
@@ -17,8 +18,6 @@ class Answers extends Component {
       showButton: false,
       intervalId: 0,
       timer: ANSWER_TIME,
-      score: 0,
-      assertions: 0,
     };
 
     this.renderAnswers = this.renderAnswers.bind(this);
@@ -49,25 +48,23 @@ class Answers extends Component {
   }
 
   clickNextQuestions() {
-    const { incrementIndex, calcScore } = this.props;
-    const { score, assertions } = this.state;
+    const { incrementIndex } = this.props;
     this.setState({ showButton: false });
     incrementIndex();
     this.renderTimer();
     const btns = document.querySelectorAll('button');
     btns.forEach((btn) => {
-      if (btn.dataset.testid !== 'correct-answer') {
+      if (btn.dataset.testid !== CORRECT) {
         return btn.classList.remove('wrong');
       }
       return btn.classList.remove('correct');
     });
-    calcScore(score, assertions);
   }
 
   checkedQuestions() {
     const btns = document.querySelectorAll('button');
     btns.forEach((btn) => {
-      if (btn.dataset.testid !== 'correct-answer') {
+      if (btn.dataset.testid !== CORRECT) {
         return btn.classList.add('wrong');
       }
       return btn.classList.add('correct');
@@ -90,7 +87,7 @@ class Answers extends Component {
   handleScore({ target }) {
     const HARD = 3;
     const MEDIUM = 2;
-    const { questions, index } = this.props;
+    const { questions, index, calcScore } = this.props;
     const { testid } = target.dataset;
     const { timer } = this.state;
 
@@ -98,13 +95,10 @@ class Answers extends Component {
     const dify = questions[index].difficulty;
     const level = dify === 'hard' ? HARD : MEDIUM;
 
-    if (testid === 'correct-answer') {
+    if (testid === CORRECT) {
       const points = defaultValue + (timer * (dify === 'easy' ? 1 : level));
-      this.setState((prev) => ({
-        assertions: prev.assertions + 1,
-        score: prev.score + points,
-      }));
-      // calcScore(points, 1) // chamar direto o calcScore, sem salvar no state do componente
+      const assertion = 1;
+      calcScore(points, assertion); // manda direto pro state global
     }
   }
 

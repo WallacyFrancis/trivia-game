@@ -13,16 +13,16 @@ const player = (state = INITIAL_STATE, action) => {
     return {
       ...state,
       name: action.state.name,
-      assertions: action.state.assertion,
-      score: action.state.score,
       gravatarEmail: action.state.gravatarEmail,
     };
   case SCORE_ACTION:
-    return {
+    return ({
       ...state,
       score: state.score + action.points,
       assertions: state.assertions + action.assertion,
-    };
+    }
+    // localStorage.setItem(('state', JSON.stringify(state)))
+    );
   default:
     return state;
   }

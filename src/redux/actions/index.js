@@ -17,7 +17,7 @@ export const nextQuestions = () => ({
   type: NEXT_QUESTIONS,
 });
 
-export const scoreAction = (score, assertion) => ({
+export const scoreAction = (points, assertion) => ({
   type: SCORE_ACTION,
   points,
   assertion,
