@@ -17,7 +17,7 @@ class FeedbackText extends React.Component {
     this.setMessageInState();
   }
 
-  setMessageInState() {
+  setMessageInState() { // requisito 13
     const numberMinHits = 3;
     const { numberHits } = this.props;
 
