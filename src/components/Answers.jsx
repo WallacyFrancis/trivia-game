@@ -104,6 +104,7 @@ class Answers extends Component {
         assertions: prev.assertions + 1,
         score: prev.score + points,
       }));
+      // calcScore(points, 1) // chamar direto o calcScore, sem salvar no state do componente
     }
   }
 

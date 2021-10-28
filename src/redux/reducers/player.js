@@ -20,8 +20,8 @@ const player = (state = INITIAL_STATE, action) => {
   case SCORE_ACTION:
     return {
       ...state,
-      score: action.score,
-      assertions: action.assertions,
+      score: state.score + action.points,
+      assertions: state.assertions + action.assertion,
     };
   default:
     return state;
